@@ -44,7 +44,7 @@ If your project uses older Elasticsearch, Laravel, or PHP version check [the pre
 The library can be installed via Composer:
 
 ```bash
-composer require babenkoivan/elastic-migrations
+composer require honcharenko-serhii/elastic-migrations
 ```
 
 If you want to use Elastic Migrations with [Lumen framework](https://lumen.laravel.com/) check [this guide](https://github.com/babenkoivan/elastic-migrations/wiki/Lumen-Installation).
