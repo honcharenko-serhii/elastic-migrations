@@ -28,7 +28,7 @@ class MigrationStorage implements ReadinessInterface
         }
 
         if (is_null($this->getDefaultPath())) {
-            return new MigrationFile($this->getDefaultPath());
+            throw new \Exception('Default migration path is not yet created');
         }
 
         if (!$this->filesystem->isDirectory($this->getDefaultPath())) {

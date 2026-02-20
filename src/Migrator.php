@@ -188,10 +188,6 @@ class Migrator implements ReadinessInterface
             $this->output->writeln('<error>Migration table is not yet created</error>');
         }
 
-        if (!$isMigrationStorageReady = $this->migrationStorage->isReady()) {
-            $this->output->writeln('<error>Default migration path is not yet created</error>');
-        }
-
-        return $isMigrationRepositoryReady && $isMigrationStorageReady;
+        return $isMigrationRepositoryReady;
     }
 }

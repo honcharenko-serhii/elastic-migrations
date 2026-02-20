@@ -25,7 +25,7 @@ class MigrateCommand extends Command
     {
         $migrator->setOutput($this->output);
 
-        if (!$this->confirmToProceed() || !$migrator->isReady()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 

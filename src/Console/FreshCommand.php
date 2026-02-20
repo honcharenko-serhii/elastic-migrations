@@ -29,7 +29,7 @@ class FreshCommand extends Command
     ): int {
         $migrator->setOutput($this->output);
 
-        if (!$this->confirmToProceed() || !$migrator->isReady()) {
+        if (!$this->confirmToProceed()) {
             return 1;
         }
 

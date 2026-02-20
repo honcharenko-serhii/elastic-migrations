@@ -20,10 +20,6 @@ class StatusCommand extends Command
     {
         $migrator->setOutput($this->output);
 
-        if (!$migrator->isReady()) {
-            return 1;
-        }
-
         $onlyPending = (bool)$this->option('pending');
         $migrator->showStatus($onlyPending);
 
