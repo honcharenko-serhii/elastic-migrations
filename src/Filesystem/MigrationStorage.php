@@ -12,14 +12,12 @@ class MigrationStorage implements ReadinessInterface
     protected const DIRECTORY_PERMISSIONS = 0755;
 
     protected Filesystem $filesystem;
-    protected string $defaultPath;
-    protected Collection $paths;
+    protected string|null $defaultPath = null;
+    protected Collection|null $paths = null;
 
     public function __construct(Filesystem $filesystem)
     {
         $this->filesystem = $filesystem;
-        $this->defaultPath = config('elastic.migrations.storage.default_path', '');
-        $this->paths = collect([$this->defaultPath]);
     }
 
     public function create(string $fileName, string $content): MigrationFile
@@ -29,11 +27,15 @@ class MigrationStorage implements ReadinessInterface
             return new MigrationFile($fileName);
         }
 
-        if (!$this->filesystem->isDirectory($this->defaultPath)) {
-            $this->filesystem->makeDirectory($this->defaultPath, static::DIRECTORY_PERMISSIONS, true);
+        if (is_null($this->getDefaultPath())) {
+            return new MigrationFile($this->getDefaultPath());
         }
 
-        $filePath = $this->makeFilePath($this->defaultPath, $fileName);
+        if (!$this->filesystem->isDirectory($this->getDefaultPath())) {
+            $this->filesystem->makeDirectory($this->getDefaultPath(), static::DIRECTORY_PERMISSIONS, true);
+        }
+
+        $filePath = $this->makeFilePath($this->getDefaultPath(), $fileName);
         $this->filesystem->put($filePath, $content);
         return new MigrationFile($filePath);
     }
@@ -44,7 +46,7 @@ class MigrationStorage implements ReadinessInterface
             return $this->filesystem->exists($fileName) ? new MigrationFile($fileName) : null;
         }
 
-        foreach ($this->paths as $path) {
+        foreach ($this->getPaths() as $path) {
             $filePath = $this->makeFilePath($path, $fileName);
 
             if ($this->filesystem->exists($filePath)) {
@@ -57,7 +59,7 @@ class MigrationStorage implements ReadinessInterface
 
     public function all(): Collection
     {
-        return $this->paths->flatMap(
+        return $this->getPaths()->flatMap(
             fn (string $path) => $this->filesystem->glob($path . '/*_*' . MigrationFile::FILE_EXTENSION)
         )->filter()->mapWithKeys(
             static function (string $filePath) {
@@ -69,13 +71,39 @@ class MigrationStorage implements ReadinessInterface
 
     public function registerPaths(array $paths): self
     {
-        $this->paths = $this->paths->merge($paths)->filter()->unique()->values();
+        $this->paths = $this->getPaths()->merge($paths)->filter()->unique()->values();
         return $this;
     }
 
     public function isReady(): bool
     {
-        return $this->filesystem->isDirectory($this->defaultPath);
+        return $this->filesystem->isDirectory($this->getDefaultPath());
+    }
+
+    protected function getDefaultPath(): string|null
+    {
+        if (is_null($this->defaultPath)) {
+            $path = config('elastic.migrations.storage.default_path', '');
+
+            if (is_string($path)) {
+                $this->defaultPath = $path;
+            }
+        }
+
+        return $this->defaultPath;
+    }
+
+    protected function getPaths(): Collection
+    {
+        if (is_null($this->paths)) {
+            $this->paths = collect();
+
+            if ($defaultPath = $this->getDefaultPath()) {
+                $this->paths->add($defaultPath);
+            }
+        }
+
+        return $this->paths;
     }
 
     private function isPath(string $path): bool
