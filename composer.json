@@ -1,5 +1,5 @@
 {
-    "name": "babenkoivan/elastic-migrations",
+    "name": "honcharenko-serhii/elastic-migrations",
     "description": "Elasticsearch migrations for Laravel",
     "keywords": [
         "laravel",
